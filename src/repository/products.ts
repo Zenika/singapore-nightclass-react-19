@@ -23,14 +23,11 @@ export function getProduct(id: string): Product | undefined {
 	return product;
 }
 
-export function decrementProductStock(
-	productId: string,
-	stock: number,
-): Product | undefined {
+export function decrementProductStock(productId: string): Product | undefined {
 	try {
 		const products = db
 			.prepare("UPDATE products SET stock = stock - 1 WHERE id = ? returning *")
-			.get(stock, productId) as Product | undefined;
+			.get(productId) as Product | undefined;
 		return products;
 	} catch (e) {
 		if (e instanceof SqliteError && e.code === "SQLITE_CONSTRAINT_CHECK") {

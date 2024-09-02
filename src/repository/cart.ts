@@ -1,4 +1,5 @@
 import { db } from "@/repository/db";
+import { decrementProductStock } from "@/repository/products";
 
 type Cart = {
 	id: number;
@@ -10,17 +11,29 @@ export function getCart(cartId: string): Cart | undefined {
 		| Cart
 		| undefined;
 }
+export async function asyncGetCart(cartId: string): Promise<Cart | undefined> {
+	return new Promise((res) =>
+		res(
+			db.prepare("SELECT * FROM carts WHERE id = ?").get(cartId) as
+				| Cart
+				| undefined,
+		),
+	);
+}
 
 export function addToCart(cartId: string): Cart | undefined {
+	let row: Cart | undefined;
 	try {
 		// FIXME: start db transaction and decrease stock
-		let row: Cart | undefined;
-		row = db
-			.prepare("UPDATE carts SET items = items + 1 WHERE id = ? returning *")
-			.get(cartId) as Cart | undefined;
-		// const moveItemFromStockToCart = db.transaction(() => {
-		// 	// updateProductStock(1, ???)
-		// });
+		const update = db.prepare(
+			"UPDATE carts SET items = items + 1 WHERE id = ? returning *",
+		);
+		const moveItemFromStockToCart = db.transaction(() => {
+			decrementProductStock("1");
+			row = update.get(cartId) as Cart | undefined;
+		});
+
+		moveItemFromStockToCart();
 		return row;
 	} catch (err) {
 		if (!db.inTransaction) throw err; // (transaction was forcefully rolled back)
