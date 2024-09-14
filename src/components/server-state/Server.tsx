@@ -2,7 +2,6 @@
 import { useCart } from "@/queries/useCart";
 import { useStock } from "@/queries/useStock";
 import { useEffect, useState } from "react";
-import { handleAction } from "./handle-action";
 
 export function Server() {
 	const [stock, setStock] = useState(0);
@@ -23,6 +22,14 @@ export function Server() {
 		}
 	}, [stockData]);
 
+	const handleSubmit = (e: { preventDefault: () => void }) => {
+		e.preventDefault();
+		fetch("/api/set-server", {
+			method: "POST",
+			body: JSON.stringify({ stock, cart }),
+		}).then(() => window.location.reload());
+	};
+
 	const handleQuickSet = (e: { preventDefault: () => void }) => {
 		fetch("/api/set-server", {
 			method: "POST",
@@ -37,7 +44,7 @@ export function Server() {
 			}
 		>
 			<h2 className={"font-bold text-2xl"}>Server state</h2>
-			<form className={"flex flex-col gap-4"} action={handleAction}>
+			<form className={"flex flex-col gap-4"} onSubmit={handleSubmit}>
 				<div
 					className={
 						"grid grid-cols-1 md:grid-cols-2 justify-items-stretch gap-2"

@@ -1,15 +1,13 @@
 import { addToCart, getCart, resetCart } from "@/repository/cart";
 import { timeout } from "@/utils/timeout";
 
-export const dynamic = "force-dynamic"; // defaults to auto
-
 export async function GET(
 	request: Request,
 	{ params }: { params: { id: string } },
 ) {
 	const cart = getCart(params.id);
 
-	await timeout(1000);
+	// await timeout(750);
 	if (cart === undefined) {
 		return Response.json({ error: "Cart not found" }, { status: 404 });
 	}
@@ -22,9 +20,7 @@ export async function POST(
 ) {
 	let cart: ReturnType<typeof addToCart>;
 
-	// await timeout(750);
-	// await timeout(750);
-	// await timeout(Math.random() * 3000);
+	await timeout(1000);
 	try {
 		// Update cart
 		cart = addToCart(params.id);
