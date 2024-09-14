@@ -1,10 +1,8 @@
-"use server";
 import { setCart } from "@/repository/cart";
 import { updateProductStock } from "@/repository/products";
 import { revalidatePath } from "next/cache";
 
 export async function handleAction(formData: FormData) {
-	console.log(">>", JSON.stringify(formData));
 	const stock = formData.get("stock");
 	const cart = formData.get("cart");
 	if (!stock || !cart) {
