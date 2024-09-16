@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/queries/useCart";
-import { useActionState } from "react";
+import { useActionState, useOptimistic } from "react";
 import { useFormStatus } from "react-dom";
 
 function Pending() {
@@ -13,6 +13,8 @@ function Pending() {
 
 export default function Page() {
 	const { data, refreshCart } = useCart();
+	const [optimisticValue, setOptimisticValue] = useOptimistic(data?.items || 0);
+
 	const [error, action, isPending] = useActionState(async () => {
 		const res = await fetch("/api/cart/1", { method: "POST" });
 		if (!res.ok) {
@@ -23,6 +25,7 @@ export default function Page() {
 	}, false);
 
 	async function handleAction() {
+		setOptimisticValue(optimisticValue + 1);
 		action();
 	}
 
@@ -51,7 +54,7 @@ export default function Page() {
 					</button>
 					<h2 className="text-4xl font-bold">your cart</h2>
 					{data ? (
-						<div className="h-[2rem]">{data.items} items</div>
+						<div className="h-[2rem]">{optimisticValue} items</div>
 					) : (
 						<div className="h-[2rem]" />
 					)}
