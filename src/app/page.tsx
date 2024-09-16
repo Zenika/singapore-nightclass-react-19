@@ -2,6 +2,14 @@
 
 import { useCart } from "@/queries/useCart";
 import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
+
+function Pending() {
+	const { pending } = useFormStatus();
+	return (
+		<>{pending ? <div className="loading" /> : <div className="h-[2rem]" />}</>
+	);
+}
 
 export default function Page() {
 	const { data, refreshCart } = useCart();
@@ -47,11 +55,7 @@ export default function Page() {
 					) : (
 						<div className="h-[2rem]" />
 					)}
-					{!data || isPending ? (
-						<div className="loading" />
-					) : (
-						<div className="h-[2rem]" />
-					)}
+					<Pending />
 					{error ? (
 						<div className="text-red-400">Out of stock</div>
 					) : (
