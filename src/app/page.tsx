@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/queries/useCart";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, startTransition, useState } from "react";
 
 export default function Page() {
 	const [error, setError] = useState(false);
@@ -10,16 +10,16 @@ export default function Page() {
 	const { data, refreshCart } = useCart();
 
 	async function handleSubmit(e: FormEvent) {
-		setIsLoading(true);
-		e.preventDefault();
-		const res = await fetch("/api/cart/1", { method: "POST" });
-		if (!res.ok) {
-			setError(true);
-		} else {
-			setError(false);
-			await refreshCart();
-		}
-		setIsLoading(false);
+		startTransition(async () => {
+			e.preventDefault();
+			const res = await fetch("/api/cart/1", { method: "POST" });
+			if (!res.ok) {
+				setError(true);
+			} else {
+				setError(false);
+				await refreshCart();
+			}
+		});
 	}
 
 	return (
