@@ -1,5 +1,7 @@
 import * as Form from "@/components/form/Form";
+import { RelatedProductsClient } from "@/components/product/RelatedProductClient";
 import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { getRelated_PROMISE } from "@/components/product/getRelatedProduct";
 import { addToCart, getCart } from "@/repository/cart";
 import { timeout } from "@/utils/timeout";
 import { revalidatePath } from "next/cache";
@@ -25,6 +27,8 @@ export default function Page() {
 		}
 	}
 
+	const promise = getRelated_PROMISE();
+
 	return (
 		<>
 			{/* PAGE */}
@@ -43,6 +47,10 @@ export default function Page() {
 
 					<Suspense fallback={<div className="loading" />}>
 						<RelatedProducts />
+					</Suspense>
+
+					<Suspense fallback={<div className="loading" />}>
+						<RelatedProductsClient relatedProductsPromise={promise} />
 					</Suspense>
 				</section>
 				<Form.Root
