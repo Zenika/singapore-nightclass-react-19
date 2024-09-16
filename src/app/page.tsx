@@ -1,12 +1,11 @@
 "use client";
 
 import { useCart } from "@/queries/useCart";
-import { type FormEvent, startTransition, useState } from "react";
+import { type FormEvent, useState, useTransition } from "react";
 
 export default function Page() {
 	const [error, setError] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-
+	const [isPending, startTransition] = useTransition();
 	const { data, refreshCart } = useCart();
 
 	async function handleSubmit(e: FormEvent) {
@@ -51,7 +50,7 @@ export default function Page() {
 					) : (
 						<div className="h-[2rem]" />
 					)}
-					{!data || isLoading ? (
+					{!data || isPending ? (
 						<div className="loading" />
 					) : (
 						<div className="h-[2rem]" />
