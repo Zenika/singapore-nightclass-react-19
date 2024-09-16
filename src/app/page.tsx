@@ -1,32 +1,26 @@
-"use client";
-
-import { useCart } from "@/queries/useCart";
-import { useActionState, useOptimistic } from "react";
-import { useFormStatus } from "react-dom";
-
-function Pending() {
-	const { pending } = useFormStatus();
-	return (
-		<>{pending ? <div className="loading" /> : <div className="h-[2rem]" />}</>
-	);
-}
+import * as Form from "@/components/form/Form";
+import { addToCart, getCart } from "@/repository/cart";
+import { timeout } from "@/utils/timeout";
+import { revalidatePath } from "next/cache";
+import { notFound } from "next/navigation";
 
 export default function Page() {
-	const { data, refreshCart } = useCart();
-	const [optimisticValue, setOptimisticValue] = useOptimistic(data?.items || 0);
-
-	const [error, action, isPending] = useActionState(async () => {
-		const res = await fetch("/api/cart/1", { method: "POST" });
-		if (!res.ok) {
-			return true;
-		}
-		await refreshCart();
-		return false;
-	}, false);
+	const cart = getCart("1");
+	if (!cart) {
+		notFound();
+	}
 
 	async function handleAction() {
-		setOptimisticValue(optimisticValue + 1);
-		action();
+		"use server";
+		await timeout(1000);
+		try {
+			// Update cart
+			addToCart("1");
+			revalidatePath("/");
+			return false;
+		} catch (e) {
+			return true;
+		}
 	}
 
 	return (
@@ -45,7 +39,7 @@ export default function Page() {
 						/>
 					</section>
 				</section>
-				<form
+				<Form.Root
 					action={handleAction}
 					className="flex-0 p-4 rounded bg-gray-200 text-slate-950 dark:bg-slate-800 dark:text-white text-2xl"
 				>
@@ -53,18 +47,12 @@ export default function Page() {
 						Add to cart
 					</button>
 					<h2 className="text-4xl font-bold">your cart</h2>
-					{data ? (
-						<div className="h-[2rem]">{optimisticValue} items</div>
-					) : (
-						<div className="h-[2rem]" />
-					)}
-					<Pending />
-					{error ? (
-						<div className="text-red-400">Out of stock</div>
-					) : (
-						<div className="h-[2rem]" />
-					)}
-				</form>
+
+					<div className="h-[2rem]">{cart.items} items</div>
+
+					<Form.Pending />
+					<Form.Error />
+				</Form.Root>
 			</article>
 		</>
 	);
