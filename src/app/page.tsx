@@ -1,8 +1,10 @@
 import * as Form from "@/components/form/Form";
+import { RelatedProducts } from "@/components/product/RelatedProducts";
 import { addToCart, getCart } from "@/repository/cart";
 import { timeout } from "@/utils/timeout";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 export default function Page() {
 	const cart = getCart("1");
@@ -38,6 +40,10 @@ export default function Page() {
 							alt="a green sweater with long sleeves"
 						/>
 					</section>
+
+					<Suspense fallback={<div className="loading" />}>
+						<RelatedProducts />
+					</Suspense>
 				</section>
 				<Form.Root
 					action={handleAction}
