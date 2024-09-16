@@ -1,3 +1,4 @@
+"use client";
 import type { getRelated_PROMISE } from "@/components/product/getRelatedProduct";
 import { use } from "react";
 
