@@ -1,26 +1,33 @@
-"use client";
-
-import { useCart } from "@/queries/useCart";
-import { type FormEvent, useState } from "react";
+import * as Form from "@/components/form/Form";
+import { RelatedProductsClient } from "@/components/product/RelatedProductClient";
+import { RelatedProducts } from "@/components/product/RelatedProducts";
+import { getRelated_PROMISE } from "@/components/product/getRelatedProduct";
+import { addToCart, getCart } from "@/repository/cart";
+import { timeout } from "@/utils/timeout";
+import { revalidatePath } from "next/cache";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 export default function Page() {
-	const [error, setError] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-
-	const { data, refreshCart } = useCart();
-
-	async function handleSubmit(e: FormEvent) {
-		setIsLoading(true);
-		e.preventDefault();
-		const res = await fetch("/api/cart/1", { method: "POST" });
-		if (!res.ok) {
-			setError(true);
-		} else {
-			setError(false);
-			await refreshCart();
-		}
-		setIsLoading(false);
+	const cart = getCart("1");
+	if (!cart) {
+		notFound();
 	}
+
+	async function handleAction() {
+		"use server";
+		await timeout(1000);
+		try {
+			// Update cart
+			addToCart("1");
+			revalidatePath("/");
+			return false;
+		} catch (e) {
+			return true;
+		}
+	}
+
+	const promise = getRelated_PROMISE();
 
 	return (
 		<>
@@ -37,31 +44,29 @@ export default function Page() {
 							alt="a green sweater with long sleeves"
 						/>
 					</section>
+
+					<Suspense fallback={<div className="loading" />}>
+						<RelatedProducts />
+					</Suspense>
+
+					<Suspense fallback={<div className="loading" />}>
+						<RelatedProductsClient relatedProductsPromise={promise} />
+					</Suspense>
 				</section>
-				<form
-					onSubmit={handleSubmit}
+				<Form.Root
+					action={handleAction}
 					className="flex-0 p-4 rounded bg-gray-200 text-slate-950 dark:bg-slate-800 dark:text-white text-2xl"
 				>
 					<button className="btn btn-primary" type="submit">
 						Add to cart
 					</button>
 					<h2 className="text-4xl font-bold">your cart</h2>
-					{data ? (
-						<div className="h-[2rem]">{data.items} items</div>
-					) : (
-						<div className="h-[2rem]" />
-					)}
-					{!data || isLoading ? (
-						<div className="loading" />
-					) : (
-						<div className="h-[2rem]" />
-					)}
-					{error ? (
-						<div className="text-red-400">Out of stock</div>
-					) : (
-						<div className="h-[2rem]" />
-					)}
-				</form>
+
+					<div className="h-[2rem]">{cart.items} items</div>
+
+					<Form.Pending />
+					<Form.Error />
+				</Form.Root>
 			</article>
 		</>
 	);
